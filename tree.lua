@@ -1,4 +1,8 @@
 local l=require"treelib"
+local help=[[
+Install:
+  git clone http://github.com/timm/tree]]
+
 local the={
   p   = 2,
   min = .5,

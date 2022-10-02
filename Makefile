@@ -17,8 +17,8 @@ install: $R/../dotrc $R/../readme $R/../data
 
 $R/../readme:; cd $R/..; git clone https://github.com/timm/readme
 $R/../data  :; cd $R/..; git clone https://github.com/timm/data
-$R/../dotrc :; cd $R/..; git clone https://github.com/timm/dotrc
-	                       cd $R/../dotrc; make install
+$R/../dotrc :; cd $R/..; git clone https://github.com/timm/dotrc; 
+	printf "\n\nSuggestion: consider cd $R/../dotrc; make install\n\n"
 
 y?=saving
 itso: ## commit to Git. To add a message, set `y=message`.
