@@ -23,6 +23,12 @@ function l.rint(nlo,nhi)  --> int; returns integer from `nlo`..`nhi` (default 0.
   return math.floor(0.5 + l.rand(nlo,nhi)) end
 
 -- ## Lists
+function l.any(t) --> any; return any item from `t`, picked at random
+  return t[rind(#t)] end
+
+function l.many(t,n) --> t; return `n` items from `t`, picked at random
+  local u={}; for i=1,n do l.push(u, l.any(t)) end; return u end 
+
 function l.ent(t) --> num;  entropy
   local function calc(p) return p*math.log(p) end
   local n=0; for _,n1 in pairs(t) do n=n+n1 end

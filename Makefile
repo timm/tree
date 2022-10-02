@@ -23,3 +23,25 @@ $R/../dotrc :; cd $R/..; git clone https://github.com/timm/dotrc
 y?=saving
 itso: ## commit to Git. To add a message, set `y=message`.
 	git commit -am "$y"; git push; git status
+
+~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
+	mkdir -p ~/tmp
+	echo "pdf-ing $@ ... "
+	a2ps                 \
+		-Br                 \
+		-l 100                 \
+		--file-align=fill      \
+		--line-numbers=1        \
+		--borders=no             \
+		--pro=color               \
+		--left-title=""            \
+		--pretty-print="$R/../dotrc/lua.ssh" \
+		--columns 3                  \
+		-M letter                     \
+		--footer=""                    \
+		--right-footer=""               \
+	  -o	 $@.ps $<
+	ps2pdf $@.ps $@; rm $@.ps
+	open $@
+
+
