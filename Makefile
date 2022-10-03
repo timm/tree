@@ -9,9 +9,18 @@ help: ## print help
 		| awk 'BEGIN {FS = ":.*?## "}\
 	               {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
+
+D=auto2 auto93 nasa93dem china coc1000 healthCloseIsses12mths0011-easy \
+   healthCloseIsses12mths0001-hard pom SSN SSM#
+trees: ## DEMO. checks  if best breaks are at root of tree (level=1) or other
+	$(foreach d,$D, lua treego.lua -f ../data/$d.csv -g tree; )
+
+sneaks: ## DEMO. checks  if best breaks are at root of tree (level=1) or other
+	$(foreach d,$D, lua treego.lua -f ../data/$d.csv -g sneak; )
+
 README.md: treelib.lua tree.lua ## update readme
 	printf "\n# TREE\nTree learner via recursive random projections\n" > README.md
-	lua $R/../readme.lua treelib.lua >> README.md
+	lua $R/../readme/readme.lua tree.lua treelib.lua >> README.md
 
 install: $R/../dotrc $R/../readme $R/../data
 

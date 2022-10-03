@@ -6,6 +6,11 @@ function l.rogues() --> nil; report rogue locals
   for k,v in pairs(_ENV) do
     if not b4[k] then print( l.fmt("#W ?%s %s",k,type(v)) ) end end end
 
+-- ## Maths
+function l.rnd(n, nPlaces) --> num. return `n` rounded to `nPlaces`
+  local mult = 10^(nPlaces or 3)
+  return math.floor(n * mult + 0.5) / mult end
+
 -- ### Random number generator
 -- The LUA doco says its random number generator is not stable across platforms.
 -- Hence, we use our own (using Park-Miller).
@@ -24,13 +29,19 @@ function l.rint(nlo,nhi)  --> int; returns integer from `nlo`..`nhi` (default 0.
 
 -- ## Lists
 function l.any(t) --> any; return any item from `t`, picked at random
-  return t[rind(#t)] end
+  return t[l.rint(#t)] end
 
 function l.many(t,n) --> t; return `n` items from `t`, picked at random
   local u={}; for i=1,n do l.push(u, l.any(t)) end; return u end 
 
+function  l.per(t,p) --> num; return the `p`th(=.5) item of sorted list `t`
+  p=math.floor(((p or .5)*#t)+.5); return t[math.max(1,math.min(#t,p))] end
+
+ function l.pers(t,nps) --> t; return the `nps` items of sorted list `t`
+   return l.map(nps,function(p) return l.per(t,p) end) end
+
 function l.ent(t) --> num;  entropy
-  local function calc(p) return p*math.log(p) end
+  local function calc(p) return p*math.log(p,2) end
   local n=0; for _,n1 in pairs(t) do n=n+n1 end
   local e=0; for _,n1 in pairs(t) do e=e - calc(n1/n) end 
   return e end
@@ -51,6 +62,10 @@ function l.push(t, x) --> any; push `x` to end of list; return `x`
 
 function l.sd(t) --> num; sorted list standard deviation= (90-10)th percentile/2.58
   return (t[(.9*#t)//1] - t[(.1*#t)//1]) / 2.58 end
+
+function l.slice(t, go, stop, inc) --> t; return `t` from `go`(=1) to `stop`(=#t), by `inc`(=1)
+  local u={}; for j=(go or 1)//1,(stop or #t)//1,(inc or 1)//1 do u[1+#u]=t[j] end
+  return u end
 
 -- ### Sorting Lists
 function l.gt(s) --> fun; return a function that sorts ascending on `s'.
@@ -102,6 +117,7 @@ function l.o(t,  seen) --> str; table to string (recursive)
   local u   = #t>0 and l.map(t,tostring) or l.map(l.keys(t),filter)
   return pre.."{".. table.concat(u," ").."}" end
 
+
 -- ## Objects
 local _id=0
 local function id() _id=_id+1; return _id end
@@ -111,6 +127,30 @@ function l.obj(s,    t,new) --> t; create a klass and a constructor + print meth
      local i=setmetatable({_id=id()},k); t.new(i,...); return i end
   t={_is=s, __tostring = l.o}
   t.__index = t;return setmetatable(t,{__call=new}) end
+
+-- Test suite support
+function l.cli(t) --> t; alters contents of options in `t` from the  command-line
+  for k,v in pairs(t) do
+    local v=tostring(v)
+    for n,x in ipairs(arg) do
+      if x=="-"..(k:sub(1,1)) or x=="--"..k then
+         v = v=="false" and "true" or v=="true" and "false" or arg[n+1] end end
+    t[k] = l.coerce(v) end
+  if t.help then os.exit(print(t._help)) end
+  return t end
+
+function l.run(funs,t) --> nfails; runs all `funs` (or `t.go`), resetting options & seed before each
+  local fails,defaults = 0,{}
+  for k,v in pairs(t) do defaults[k]=v end
+  for _,k in pairs(l.keys(funs)) do
+    if t.go == "all" or t.go==k then
+      for k,v in pairs(defaults) do t[k]=v end
+      l.srand(t.seed or 937162211)
+      if funs[k]() == false 
+      then print(l.fmt("# ❌ %s",k)); fails=fails+1 
+      else print(l.fmt("# ✅ %s",k)) end end end
+   l.rogues()
+   return fails end
 
 -- That's all folks.
 return l
